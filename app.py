@@ -26,6 +26,16 @@ memes = [
 ]
 contest_active = False
 
+@bot.message_handler(commands=['getfileid'])
+def get_file_id(message):
+    # This will reply with the file_id of any photo you send
+    if message.photo:
+        # Telegram sends multiple sizes; use the largest
+        file_id = message.photo[-1].file_id
+        bot.reply_to(message, f"File ID:\n`{file_id}`", parse_mode="Markdown")
+    else:
+        bot.reply_to(message, "Please send me a photo after this command.")
+
 # === 2. Bot Command Handlers ===
 
 @bot.message_handler(commands=['startcontest'])
