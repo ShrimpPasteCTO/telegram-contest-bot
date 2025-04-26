@@ -132,6 +132,16 @@ def test_photo4(message):
         message_thread_id=THREAD_ID
     )
 
+@bot.message_handler(content_types=['photo'])
+def photo_handler(message):
+    """
+    Reply with the file_id of any photo the bot receives.
+    DM the bot your Meme 4 image to get its file_id.
+    """
+    # Telegram sends multiple sizes; take the largest ([-1])
+    file_id = message.photo[-1].file_id
+    bot.reply_to(message, f"Here’s your file_id:\n`{file_id}`", parse_mode="Markdown")
+
 # === 3. Webhook Setup ===
 
 # Route for Telegram webhook POST requests
