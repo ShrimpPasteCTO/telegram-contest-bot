@@ -1,8 +1,6 @@
 from flask import Flask, request
 import telebot
 import os
-import requests
-
 
 # === 1. Configuration ===
 BOT_TOKEN = os.environ.get("BOT_TOKEN")  # We will set this environment variable on Render
@@ -122,37 +120,15 @@ def end_contest(message):
     result_text += f"\n🏅 **Winner:** {winner['caption']} with *{winner['votes']}* votes! 🏅"
     bot.reply_to(message, result_text, parse_mode="Markdown")
 
-@bot.message_handler(commands=['testphoto4'])
-def test_photo4(message):
-    """
-    Debug command to send only Meme #4's URL so we can verify what Telegram fetches.
-    """
-    bot.send_photo(
-        chat_id=message.chat.id,
-        photo="https://i.imgur.com/2w7tAhx.jpg",    # your meme-4 direct URL
-        caption="📸 Test photo 4",
-        message_thread_id=THREAD_ID
-    )
-
 @bot.message_handler(content_types=['photo'])
 def photo_handler(message):
     """
-    Reply with the file_id of any photo the bot receives.
-    DM the bot your Meme 4 image to get its file_id.
+    Whenever you DM this bot a photo, it will reply with that photo’s file_id.
     """
-    # Telegram sends multiple sizes; take the largest ([-1])
-    file_id = message.photo[-1].file_id
-    bot.reply_to(message, f"Here’s your file_id:\n`{file_id}`", parse_mode="Markdown")
-
-@bot.message_handler(content_types=['photo'])
-def photo_handler(message):
-    """
-    Any time you send a photo to the bot (in any chat),
-    it will reply with that photo's file_id.
-    """
-    # Telegram sends multiple sizes; take the largest
+    # Telegram sends multiple sizes; take the largest one
     file_id = message.photo[-1].file_id
     bot.reply_to(message, f"📎 file_id:\n`{file_id}`", parse_mode="Markdown")
+
 
 # === 3. Webhook Setup ===
 
