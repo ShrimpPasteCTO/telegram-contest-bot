@@ -1,6 +1,8 @@
 from flask import Flask, request
 import telebot
 import os
+import requests
+
 
 # === 1. Configuration ===
 BOT_TOKEN = os.environ.get("BOT_TOKEN")  # We will set this environment variable on Render
@@ -141,6 +143,16 @@ def photo_handler(message):
     # Telegram sends multiple sizes; take the largest ([-1])
     file_id = message.photo[-1].file_id
     bot.reply_to(message, f"Here’s your file_id:\n`{file_id}`", parse_mode="Markdown")
+
+@bot.message_handler(content_types=['photo'])
+def photo_handler(message):
+    """
+    Any time you send a photo to the bot (in any chat),
+    it will reply with that photo's file_id.
+    """
+    # Telegram sends multiple sizes; take the largest
+    file_id = message.photo[-1].file_id
+    bot.reply_to(message, f"📎 file_id:\n`{file_id}`", parse_mode="Markdown")
 
 # === 3. Webhook Setup ===
 
