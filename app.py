@@ -110,6 +110,18 @@ def end_contest(message):
     result_text += f"\n🏅 **Winner:** {winner['caption']} with *{winner['votes']}* votes! 🏅"
     bot.reply_to(message, result_text, parse_mode="Markdown")
 
+@bot.message_handler(commands=['testphoto4'])
+def test_photo4(message):
+    """
+    Debug command to send only Meme #4's URL so we can verify what Telegram fetches.
+    """
+    bot.send_photo(
+        chat_id=message.chat.id,
+        photo="https://i.imgur.com/2w7tAhx.jpg",    # your meme-4 direct URL
+        caption="📸 Test photo 4",
+        message_thread_id=THREAD_ID
+    )
+
 # === 3. Webhook Setup ===
 
 # Route for Telegram webhook POST requests
