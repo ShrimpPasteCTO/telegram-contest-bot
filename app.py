@@ -16,7 +16,7 @@ memes = [
     {"id": 1, "url": "https://i.imgur.com/5mq5ilu.jpeg", "caption": "Option 1 - Submitted by Adonis", "votes": 0, "voters": set()},
     {"id": 2, "url": "https://i.imgur.com/LryoAx6.jpeg", "caption": "Option 2 - Submitted by Sunflwr Seed", "votes": 0, "voters": set()},
     {"id": 3, "url": "https://i.imgur.com/HqrRIb9.jpeg", "caption": "Option 3 - Submitted by Philip Falana", "votes": 0, "voters": set()},
-    {"id": 4, "url": "https://i.imgur.com/2w7tAhx.jpg", "caption": "Option 4 - Submitted by Luis Boxeo", "votes": 0, "voters": set()},
+    {"id": 4, "url": "AgACAgEAAxkBAAMGaA06GDPNM0Yh760rtxFJzgdODQoAAqqsMRvBBGlEciNYC5YpdKcBAAMCAANtAAM2BA", "caption": "Option 4 - Submitted by Luis Boxeo", "votes": 0, "voters": set()},
     {"id": 5, "url": "https://i.imgur.com/s4iiDqx.jpeg", "caption": "Option 5 - Submitted by DoomSlayer", "votes": 0, "voters": set()},
     {"id": 6, "url": "https://i.imgur.com/dbPbQMe.jpeg", "caption": "Option 6 - Submitted by Dolphie", "votes": 0, "voters": set()},
     {"id": 7, "url": "https://i.imgur.com/Pe4JKyc.jpeg", "caption": "Option 7 - Submitted by Demmy", "votes": 0, "voters": set()},
