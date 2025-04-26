@@ -1,11 +1,20 @@
 from flask import Flask, request
 import telebot
 import os
++import requests
++import time
 
 # === 1. Configuration ===
 BOT_TOKEN = os.environ.get("BOT_TOKEN")  # We will set this environment variable on Render
 GROUP_ID = -1002483696025                # <- **Replace this with your group’s chat ID** (with -100 prefix)
 THREAD_ID = 269755                      # <- **Replace this with your contest topic’s thread_id**
+
+# === Voting setup ===
+VOTE_SCORES     = {'🔥': 1, '😂': 2, '💀': 3}
+votes           = {}   # message_id → { user_id → emoji }
+user_vote_count = {}   # user_id    → number of memes they’ve voted on (max 5)
+posted_memes    = []   # remember message_ids we post, in order
+
 
 bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
@@ -49,21 +58,60 @@ def start_contest(message):
         bot.reply_to(message, "A contest is already running!")
         return
 
+    # ─── WIPE OUT OLD VOTES ─────────────
++    votes.clear()
++    user_vote_count.clear()
++    posted_memes.clear()
++    # ──────────────────────────────────
+
     contest_active = True
     # Post each meme in the contest topic with a vote button
     for meme in memes:
         # Create an inline keyboard with a single "Vote" button starting at 0 votes
-        keyboard = telebot.types.InlineKeyboardMarkup()
-        vote_button = telebot.types.InlineKeyboardButton(f"👍 Vote 0", callback_data=f"vote_{meme['id']}")
-        keyboard.add(vote_button)
-        # Send the meme to the group topic. If it's an image, use send_photo; for text, could use send_message.
-        bot.send_photo(chat_id=GROUP_ID, photo=meme['url'], caption=meme['caption'],
-                       reply_markup=keyboard, message_thread_id=THREAD_ID)
+         # ─── build 3 buttons with weights ───
++        kb = telebot.types.InlineKeyboardMarkup(row_width=3)
++        buttons = [
++            telebot.types.InlineKeyboardButton(f"🔥 1pt", callback_data=f"🔥_{meme['id']}"),
++            telebot.types.InlineKeyboardButton(f"😂 2pt", callback_data=f"😂_{meme['id']}"),
++            telebot.types.InlineKeyboardButton(f"💀 3pt", callback_data=f"💀_{meme['id']}"),
++        ]
++        kb.add(*buttons)
++
++        # send and record the message_id
++        msg = bot.send_photo(
++            chat_id=GROUP_ID,
++            photo=meme['url'],
++            caption=meme['caption'],
++            reply_markup=kb,
++            message_thread_id=THREAD_ID
++        )
++        posted_memes.append(msg.message_id)
     # Acknowledge the contest started
     bot.reply_to(message, "🎉 Contest started! Vote for your favorite meme above by clicking the buttons.")
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith("vote_"))
+@bot.callback_query_handler(func=lambda call: "_" in call.data and call.data.split("_")[0] in VOTE_SCORES)
 def handle_vote(call):
+    if not contest_active:
+        return bot.answer_callback_query(call.id, "❗ Contest is not active.")
+
+    user_id = call.from_user.id
+    emoji, mid_s = call.data.split("_")
+    meme_id = int(mid_s)
+
+    # init structures
+    votes.setdefault(meme_id, {})
+    user_vote_count.setdefault(user_id, 0)
+
+    already = user_id in votes[meme_id]
+    if not already:
+        if user_vote_count[user_id] >= 5:
+            return bot.answer_callback_query(call.id, "❌ You've used all 5 votes!")
+        user_vote_count[user_id] += 1
+
+    # record or overwrite
+    votes[meme_id][user_id] = emoji
+    bot.answer_callback_query(call.id, f"✅ You voted {emoji}!")
+
     # This function is called whenever an inline button with callback_data starting with "vote_" is pressed.
     if not contest_active:
         bot.answer_callback_query(call.id, "❗ Contest is not active right now.")
@@ -95,10 +143,18 @@ def leaderboard(message):
         return
     # Compile the leaderboard
     result_text = "🏆 *Contest Leaderboard:* 🏆\n\n"
-    # Sort memes by votes (descending)
-    sorted_memes = sorted(memes, key=lambda m: m['votes'], reverse=True)
-    for m in sorted_memes:
-        result_text += f"{m['caption']}: *{m['votes']}* votes\n"
+# build weighted scores
++    scores = {}
++    for mid in posted_memes:
++        # sum weights of each user’s vote on this meme
++        total = sum(VOTE_SCORES[e] for e in votes.get(mid, {}).values())
++        scores[mid] = total
++    # sort by score descending
++    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
++    for rank, (mid, sc) in enumerate(ranked, start=1):
++        caption = memes[posted_memes.index(mid)]['caption']
++        result_text += f"{rank}. {caption} — *{sc}* pts\n"
+
     # Send the leaderboard (Markdown for bold numbers)
     bot.reply_to(message, result_text, parse_mode="Markdown")
 
@@ -112,9 +168,14 @@ def end_contest(message):
     # End the contest
     contest_active = False
     # Determine the winner and final standings
-    sorted_memes = sorted(memes, key=lambda m: m['votes'], reverse=True)
-    winner = sorted_memes[0]
-    result_text = "🎉 **Contest Ended! Final Results:** 🎉\n\n"
+   # build and sort weighted scores
++    scores = {}
++    for mid in posted_memes:
++        scores[mid] = sum(VOTE_SCORES[e] for e in votes.get(mid, {}).values())
++    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
++    winner_mid, winner_score = ranked[0]
++    winner_caption = memes[posted_memes.index(winner_mid)]['caption']
++    result_text += f"\n🏅 **Winner:** {winner_caption} — *{winner_score}* pts"
     for m in sorted_memes:
         result_text += f"{m['caption']}: *{m['votes']}* votes\n"
     result_text += f"\n🏅 **Winner:** {winner['caption']} with *{winner['votes']}* votes! 🏅"
