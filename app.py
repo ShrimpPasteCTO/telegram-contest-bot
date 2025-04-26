@@ -133,7 +133,7 @@ if __name__ == "__main__":
     # Remove any previous webhook (just in case)
     bot.remove_webhook()
     # Set new webhook to the URL of our Render app + BOT_TOKEN path
-    WEBHOOK_URL = "https://<YOUR-RENDER-APP>.onrender.com/" + BOT_TOKEN
+    WEBHOOK_URL = "https://meme-contest-bot.onrender.com/" + BOT_TOKEN
     bot.set_webhook(url=WEBHOOK_URL)
     # Run Flask web server
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
