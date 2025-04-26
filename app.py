@@ -136,20 +136,6 @@ def photo_handler(message):
 @app.route(f'/{BOT_TOKEN}', methods=['POST'])
 def telegram_webhook():
     """Process incoming updates from Telegram"""
-    data = request.get_json()  # raw update JSON
-
-    # DEBUG: if someone sends a photo, reply with its file_id
-    if 'message' in data and 'photo' in data['message']:
-        photo_sizes = data['message']['photo']
-        file_id = photo_sizes[-1]['file_id']  # largest size
-        chat_id = data['message']['chat']['id']
-        # send back the file_id so you can copy it
-        requests.post(f"{TELEGRAM_API_URL}/sendMessage", json={
-            "chat_id": chat_id,
-            "text": f"Here is the file_id:\n`{file_id}`",
-            "parse_mode": "Markdown"
-        })
-
     if request.headers.get('content-type') == 'application/json':
         json_string = request.get_data().decode('utf-8')
         update = telebot.types.Update.de_json(json_string)
