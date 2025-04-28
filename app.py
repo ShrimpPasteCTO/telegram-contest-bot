@@ -139,22 +139,29 @@ def leaderboard(message):
     if not contest_active:
         bot.reply_to(message, "No contest is running at the moment.")
         return
-    # Compile the leaderboard
-    result_text = "🏆 *Contest Leaderboard:* 🏆\n\n"
-# build weighted scores
+
+    if not posted_memes:
+        bot.reply_to(message, "No memes posted yet!")
+        return
+
+    # calculate scores
     scores = {}
     for mid in posted_memes:
-        # sum weights of each user’s vote on this meme
-        total = sum(VOTE_SCORES[e] for e in votes.get(mid, {}).values())
+        meme_votes = votes.get(mid, {})
+        total = 0
+        for emoji in meme_votes.values():
+            total += VOTE_SCORES.get(emoji, 0)
         scores[mid] = total
-    # sort by score descending
-    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    for rank, (mid, sc) in enumerate(ranked, start=1):
-        caption = memes[posted_memes.index(mid)]['caption']
-        result_text += f"{rank}. {caption} — *{sc}* pts\n"
 
-    # Send the leaderboard (Markdown for bold numbers)
+    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+
+    result_text = "🏆 *Current Leaderboard:*\n\n"
+    for rank, (mid, score) in enumerate(ranked, 1):
+        caption = memes[posted_memes.index(mid)]['caption']
+        result_text += f"{rank}. {caption} — *{score}* pts\n"
+
     bot.reply_to(message, result_text, parse_mode="Markdown")
+
 
 @bot.message_handler(commands=['endcontest'])
 def end_contest(message):
