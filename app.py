@@ -208,13 +208,15 @@ def leaderboard(message):
     result_text = "🏆 *Current Leaderboard:*\n\n"
 
     scores = {}
-    for meme in memes:
-        meme_id = meme['id']
-        meme_votes = votes.get(meme_id, {})
-        total = 0
-        for emoji in meme_votes.values():
+for meme in memes:
+    meme_id = meme['id']
+    meme_votes = votes.get(meme_id, {})
+    total = 0
+    for emoji_list in meme_votes.values():
+        for emoji in emoji_list:
             total += VOTE_SCORES.get(emoji, 0)
-        scores[meme_id] = total
+    scores[meme_id] = total
+
 
     ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
 
@@ -240,13 +242,15 @@ def end_contest(message):
         return
 
     scores = {}
-    for meme in memes:
-        meme_id = meme['id']
-        meme_votes = votes.get(meme_id, {})
-        total = 0
-        for emoji in meme_votes.values():
+for meme in memes:
+    meme_id = meme['id']
+    meme_votes = votes.get(meme_id, {})
+    total = 0
+    for emoji_list in meme_votes.values():
+        for emoji in emoji_list:
             total += VOTE_SCORES.get(emoji, 0)
-        scores[meme_id] = total
+    scores[meme_id] = total
+
 
     ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
 
