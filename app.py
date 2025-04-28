@@ -50,6 +50,7 @@ def get_file_id(message):
 @bot.message_handler(commands=['startcontest'])
 def start_contest(message):
     global contest_active
+
     # Only allow contest start in the group (you can add a check for admin user here if desired)
     if message.chat.id != GROUP_ID:
         bot.reply_to(message, "Please use this command in the contest group.")
@@ -65,33 +66,33 @@ def start_contest(message):
     # ──────────────────────────────────
 
     contest_active = True
-    # Post each meme in the contest topic with a vote button
+
     for meme in memes:
-    try:
-        kb = telebot.types.InlineKeyboardMarkup(row_width=3)
-        buttons = [
-            telebot.types.InlineKeyboardButton(f"🔥 1pt", callback_data=f"🔥_{meme['id']}"),
-            telebot.types.InlineKeyboardButton(f"😂 2pt", callback_data=f"😂_{meme['id']}"),
-            telebot.types.InlineKeyboardButton(f"💀 3pt", callback_data=f"💀_{meme['id']}"),
-        ]
-        kb.add(*buttons)
+        try:
+            kb = telebot.types.InlineKeyboardMarkup(row_width=3)
+            buttons = [
+                telebot.types.InlineKeyboardButton(f"🔥 1pt", callback_data=f"🔥_{meme['id']}"),
+                telebot.types.InlineKeyboardButton(f"😂 2pt", callback_data=f"😂_{meme['id']}"),
+                telebot.types.InlineKeyboardButton(f"💀 3pt", callback_data=f"💀_{meme['id']}"),
+            ]
+            kb.add(*buttons)
 
-        # Send the meme
-        msg = bot.send_photo(
-            chat_id=GROUP_ID,
-            photo=meme['url'],
-            caption=meme['caption'],
-            reply_markup=kb,
-            message_thread_id=THREAD_ID
-        )
+            # Send the meme
+            msg = bot.send_photo(
+                chat_id=GROUP_ID,
+                photo=meme['url'],
+                caption=meme['caption'],
+                reply_markup=kb,
+                message_thread_id=THREAD_ID
+            )
 
-        # Record the sent message ID
-        posted_memes[meme['id']] = msg.message_id
+            # Record the sent message ID
+            posted_memes[meme['id']] = msg.message_id
 
-        time.sleep(0.2)  # small pause between sending
+            time.sleep(0.2)  # small pause between sending
 
-    except Exception as e:
-        print(f"Error posting meme {meme['id']}: {e}")
+        except Exception as e:
+            print(f"Error posting meme {meme['id']}: {e}")
 
     # Acknowledge the contest started
     bot.reply_to(message, "🎉 Contest started! Vote for your favorite meme above by clicking the buttons.")
