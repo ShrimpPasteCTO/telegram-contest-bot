@@ -179,28 +179,29 @@ def end_contest(message):
         bot.reply_to(message, "No memes were posted.")
         return
 
-    # calculate scores
     scores = {}
-    for mid in posted_memes:
-        meme_votes = votes.get(mid, {})
+    for meme in memes:
+        meme_id = meme['id']
+        meme_votes = votes.get(meme_id, {})
         total = 0
         for emoji in meme_votes.values():
             total += VOTE_SCORES.get(emoji, 0)
-        scores[mid] = total
+        scores[meme_id] = total
 
     ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
 
-    winner_mid, winner_score = ranked[0]
-    winner_caption = memes[posted_memes.index(winner_mid)]['caption']
+    winner_id, winner_score = ranked[0]
+    winner_caption = next(m['caption'] for m in memes if m['id'] == winner_id)
 
     result_text = "🎉 *Contest Ended! Final Results:*\n\n"
-    for rank, (mid, score) in enumerate(ranked, 1):
-        caption = memes[posted_memes.index(mid)]['caption']
+    for rank, (meme_id, score) in enumerate(ranked, 1):
+        caption = next(m['caption'] for m in memes if m['id'] == meme_id)
         result_text += f"{rank}. {caption} — *{score}* pts\n"
 
     result_text += f"\n🏅 *Winner:* {winner_caption} — *{winner_score}* pts! 🏆"
 
     bot.reply_to(message, result_text, parse_mode="Markdown")
+
 
 
 @bot.message_handler(content_types=['photo'])
