@@ -255,6 +255,7 @@ def leaderboard(message):
         caption = next(m['caption'] for m in memes if m['id'] == meme_id)
         result_text += f"{rank}. {caption} — *{score}* pts\n"
 
+    result_text += "\n\n📝 _Note: Ties are broken by counting the number of higher-weighted emoji votes (💀 > 😂 > 🔥)._"
     bot.reply_to(message, result_text, parse_mode="Markdown")
 
 
