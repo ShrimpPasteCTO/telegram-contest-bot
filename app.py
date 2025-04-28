@@ -13,7 +13,7 @@ THREAD_ID = 269755                      # <- **Replace this with your contest to
 VOTE_SCORES     = {'🔥': 1, '😂': 2, '💀': 3}
 votes           = {}   # message_id → { user_id → emoji }
 user_vote_count = {}   # user_id    → number of memes they’ve voted on (max 5)
-posted_memes    = []   # remember message_ids we post, in order
+posted_memes    = {}   # remember message_ids we post, in order
 
 
 bot = telebot.TeleBot(BOT_TOKEN)
