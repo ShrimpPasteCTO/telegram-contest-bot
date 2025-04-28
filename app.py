@@ -287,9 +287,17 @@ def end_contest(message):
     ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
 
     result_text = "🎉 *Contest Ended! Final Results:*\n\n"
-    for rank, (meme_id, score) in enumerate(ranked, 1):
+
+    place_labels = ["🥇 1st Place", "🥈 2nd Place", "🥉 3rd Place"]
+
+    for idx, (meme_id, score) in enumerate(ranked, 1):
         caption = next(m['caption'] for m in memes if m['id'] == meme_id)
-        result_text += f"{rank}. {caption} — *{score}* pts\n"
+        if idx <= 3:
+            label = place_labels[idx-1]
+            result_text += f"{label}: {caption} — *{score}* pts\n"
+        else:
+            result_text += f"{idx}. {caption} — *{score}* pts\n"
+
 
     # --- Smart Tiebreaker Winner Picking (💀 > 😂 > 🔥) ---
 
