@@ -14,6 +14,7 @@ VOTE_SCORES     = {'🔥': 1, '😂': 2, '💀': 3}
 votes           = {}   # message_id → { user_id → emoji }
 user_vote_count = {}   # user_id    → number of memes they’ve voted on (max 5)
 posted_memes    = {}   # remember message_ids we post, in order
+user_votes = {}   # user_id → set of meme_ids they voted for
 
 
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -63,6 +64,8 @@ def start_contest(message):
     votes.clear()
     user_vote_count.clear()
     posted_memes.clear()
+    user_votes.clear()
+
     # ──────────────────────────────────
 
     contest_active = True
@@ -106,19 +109,65 @@ def handle_vote(call):
     emoji, mid_s = call.data.split("_")
     meme_id = int(mid_s)
 
-    # init structures
     votes.setdefault(meme_id, {})
     user_vote_count.setdefault(user_id, 0)
+    user_votes.setdefault(user_id, set())
 
     already = user_id in votes[meme_id]
-    if not already:
-        if user_vote_count[user_id] >= 5:
-            return bot.answer_callback_query(call.id, "❌ You've used all 5 votes!")
-        user_vote_count[user_id] += 1
 
-    # record or overwrite
+    if not already and user_vote_count[user_id] >= 5:
+        offer_unvote_options(call, user_id, meme_id, emoji)
+        return
+
+    if not already:
+        user_vote_count[user_id] += 1
+        user_votes[user_id].add(meme_id)
+
     votes[meme_id][user_id] = emoji
     bot.answer_callback_query(call.id, f"✅ You voted {emoji}!")
+
+    def offer_unvote_options(call, user_id, new_meme_id, new_emoji):
+    keyboard = telebot.types.InlineKeyboardMarkup()
+
+    for old_meme_id in user_votes[user_id]:
+        caption = next(m['caption'] for m in memes if m['id'] == old_meme_id)
+        button = telebot.types.InlineKeyboardButton(
+            f"Unvote {caption}",
+            callback_data=f"unvote_{old_meme_id}_{new_meme_id}_{new_emoji}"
+        )
+        keyboard.add(button)
+
+    bot.send_message(
+        call.message.chat.id,
+        "🚨 You've already used all 5 votes! Choose a meme to unvote first:",
+        reply_markup=keyboard,
+        message_thread_id=THREAD_ID
+    )
+@bot.callback_query_handler(func=lambda call: call.data.startswith("unvote_"))
+def handle_unvote(call):
+    if not contest_active:
+        return bot.answer_callback_query(call.id, "❗ Contest is not active.")
+
+    user_id = call.from_user.id
+    parts = call.data.split("_")
+    old_meme_id = int(parts[1])
+    new_meme_id = int(parts[2])
+    new_emoji = parts[3]
+
+    # Remove old vote
+    if user_id in votes.get(old_meme_id, {}):
+        del votes[old_meme_id][user_id]
+        user_vote_count[user_id] -= 1
+        user_votes[user_id].remove(old_meme_id)
+
+    # Record new vote
+    votes.setdefault(new_meme_id, {})
+    votes[new_meme_id][user_id] = new_emoji
+    user_vote_count[user_id] += 1
+    user_votes[user_id].add(new_meme_id)
+
+    bot.answer_callback_query(call.id, "✅ Vote changed successfully!")
+
 
     # This function is called whenever an inline button with callback_data starting with "vote_" is pressed.
     if not contest_active:
