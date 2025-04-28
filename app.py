@@ -123,7 +123,9 @@ def handle_vote(call):
     user_vote_count[user_id] += 1
     user_votes[user_id].add(meme_id)
 
-    votes[meme_id][user_id] = emoji
+    votes[meme_id].setdefault(user_id, [])
+    votes[meme_id][user_id].append(emoji)
+
     bot.answer_callback_query(call.id, f"✅ You voted {emoji}!")
 
 
