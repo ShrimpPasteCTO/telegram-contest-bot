@@ -116,18 +116,16 @@ def handle_vote(call):
     user_vote_count.setdefault(user_id, 0)
     user_votes.setdefault(user_id, set())
 
-    already = user_id in votes[meme_id]
+  # temporarily allow multiple votes on same meme for testing
+if user_vote_count[user_id] >= 5:
+    return bot.answer_callback_query(call.id, "❌ You've used all 5 votes!")
 
-    if not already and user_vote_count[user_id] >= 5:
-        offer_unvote_options(call, user_id, meme_id, emoji)
-        return
+user_vote_count[user_id] += 1
+user_votes[user_id].add(meme_id)
 
-    if not already:
-        user_vote_count[user_id] += 1
-        user_votes[user_id].add(meme_id)
+votes[meme_id][user_id] = emoji
+bot.answer_callback_query(call.id, f"✅ You voted {emoji}!")
 
-    votes[meme_id][user_id] = emoji
-    bot.answer_callback_query(call.id, f"✅ You voted {emoji}!")
 
 def offer_unvote_options(call, user_id, new_meme_id, new_emoji):
     keyboard = telebot.types.InlineKeyboardMarkup()
