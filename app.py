@@ -331,6 +331,10 @@ def end_contest(message):
         if idx <= 3:
             label = place_labels[idx-1]
             result_text += f"{label}: {caption} — *{score}* pts\n"
+        elif idx == 4:
+            result_text += f"🏆 Honorable Mention (4th Place): {caption} — *{score}* pts\n"
+        elif idx == 5:
+            result_text += f"🏆 Honorable Mention (5th Place): {caption} — *{score}* pts\n"
         else:
             result_text += f"{idx}. {caption} — *{score}* pts\n"
 
