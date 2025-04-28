@@ -66,7 +66,7 @@ def start_contest(message):
 
     contest_active = True
     # Post each meme in the contest topic with a vote button
-   for meme in memes:
+    for meme in memes:
     try:
         kb = telebot.types.InlineKeyboardMarkup(row_width=3)
         buttons = [
