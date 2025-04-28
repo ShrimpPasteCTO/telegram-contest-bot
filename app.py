@@ -106,7 +106,7 @@ def start_contest(message):
 @bot.callback_query_handler(func=lambda call: "_" in call.data and call.data.split("_")[0] in VOTE_SCORES)
 def handle_vote(call):
     if not contest_active:
-        return bot.answer_callback_query(call.id, "❗ Contest is not active.")
+        return bot.answer_callback_query(call.id, "❗ Contest is not active.", show_alert=True)
 
     user_id = call.from_user.id
     emoji, mid_s = call.data.split("_")
@@ -122,14 +122,14 @@ def handle_vote(call):
 
     # Check if user has used all 5 votes
     if user_vote_count[user_id] >= 5:
-        return bot.answer_callback_query(call.id, "❌ You've already used all 5 of your votes!")
+        return bot.answer_callback_query(call.id, "❌ You've used all 5 votes!", show_alert=True)
 
     # Record the vote
     votes[meme_id][user_id] = emoji
     user_vote_count[user_id] += 1
     user_votes[user_id].add(meme_id)
 
-    bot.answer_callback_query(call.id, f"✅ You voted {emoji}!")
+    bot.answer_callback_query(call.id, f"✅ You voted {emoji}!", show_alert=True)
 
 
 def offer_unvote_options(call, user_id, new_meme_id, new_emoji):
@@ -153,7 +153,8 @@ def offer_unvote_options(call, user_id, new_meme_id, new_emoji):
 @bot.callback_query_handler(func=lambda call: call.data.startswith("unvote_"))
 def handle_unvote(call):
     if not contest_active:
-        return bot.answer_callback_query(call.id, "❗ Contest is not active.")
+       return bot.answer_callback_query(call.id, "❗ Contest is not active.", show_alert=True)
+
 
     user_id = call.from_user.id
     parts = call.data.split("_")
@@ -173,7 +174,7 @@ def handle_unvote(call):
     user_vote_count[user_id] += 1
     user_votes[user_id].add(new_meme_id)
 
-    bot.answer_callback_query(call.id, "✅ Vote changed successfully!")
+    bot.answer_callback_query(call.id, "✅ Vote changed successfully!", show_alert=True)
 
 
     # This function is called whenever an inline button with callback_data starting with "vote_" is pressed.
@@ -189,13 +190,13 @@ def handle_unvote(call):
         if meme['id'] == meme_id:
             # Prevent the same user from voting multiple times on the same meme
             if user_id in meme['voters']:
-                bot.answer_callback_query(call.id, "✅ You already voted for this meme.")
+                bot.answer_callback_query(call.id, "✅ You already voted for this meme.", show_alert=True)
             else:
                 meme['voters'].add(user_id)
                 meme['votes'] += 1
                 # Update the button text to reflect the new vote count
                 
-                bot.answer_callback_query(call.id, "✅ Vote recorded!")
+                bot.answer_callback_query(call.id, "✅ Vote recorded!", show_alert=True)
             break
 
 @bot.message_handler(commands=['leaderboard'])
