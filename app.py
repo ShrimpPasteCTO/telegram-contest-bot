@@ -118,7 +118,7 @@ def handle_vote(call):
 
     # Check if user already voted for this meme
     if user_id in votes[meme_id]:
-    return bot.answer_callback_query(call.id, "⚠️ You've already voted for this meme!", show_alert=True)
+        return bot.answer_callback_query(call.id, "⚠️ You've already voted for this meme!", show_alert=True)
 
 
     # Check if user has used all 5 votes
