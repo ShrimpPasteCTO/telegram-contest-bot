@@ -166,25 +166,40 @@ def leaderboard(message):
 @bot.message_handler(commands=['endcontest'])
 def end_contest(message):
     global contest_active
+
     if not contest_active:
         bot.reply_to(message, "There is no active contest to end.")
         return
 
-    # End the contest
     contest_active = False
-    # Determine the winner and final standings
-   # build and sort weighted scores
+
+    if not posted_memes:
+        bot.reply_to(message, "No memes were posted.")
+        return
+
+    # calculate scores
     scores = {}
     for mid in posted_memes:
-        scores[mid] = sum(VOTE_SCORES[e] for e in votes.get(mid, {}).values())
+        meme_votes = votes.get(mid, {})
+        total = 0
+        for emoji in meme_votes.values():
+            total += VOTE_SCORES.get(emoji, 0)
+        scores[mid] = total
+
     ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+
     winner_mid, winner_score = ranked[0]
     winner_caption = memes[posted_memes.index(winner_mid)]['caption']
-    result_text += f"\n🏅 **Winner:** {winner_caption} — *{winner_score}* pts"
-    for m in sorted_memes:
-        result_text += f"{m['caption']}: *{m['votes']}* votes\n"
-    result_text += f"\n🏅 **Winner:** {winner['caption']} with *{winner['votes']}* votes! 🏅"
+
+    result_text = "🎉 *Contest Ended! Final Results:*\n\n"
+    for rank, (mid, score) in enumerate(ranked, 1):
+        caption = memes[posted_memes.index(mid)]['caption']
+        result_text += f"{rank}. {caption} — *{score}* pts\n"
+
+    result_text += f"\n🏅 *Winner:* {winner_caption} — *{winner_score}* pts! 🏆"
+
     bot.reply_to(message, result_text, parse_mode="Markdown")
+
 
 @bot.message_handler(content_types=['photo'])
 def photo_handler(message):
