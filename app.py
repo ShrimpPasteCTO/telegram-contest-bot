@@ -118,7 +118,7 @@ def handle_vote(call):
 
   # temporarily allow multiple votes on same meme for testing
     if user_vote_count[user_id] >= 5:
-    return bot.answer_callback_query(call.id, "❌ You've used all 5 votes!")
+        return bot.answer_callback_query(call.id, "❌ You've used all 5 votes!")
 
     user_vote_count[user_id] += 1
     user_votes[user_id].add(meme_id)
