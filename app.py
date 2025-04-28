@@ -85,7 +85,8 @@ def start_contest(message):
             reply_markup=kb,
             message_thread_id=THREAD_ID
         )
-        posted_memes.append(msg.message_id)
+        posted_memes[meme['id']] = msg.message_id
+
     # Acknowledge the contest started
     bot.reply_to(message, "🎉 Contest started! Vote for your favorite meme above by clicking the buttons.")
 
