@@ -270,7 +270,11 @@ def end_contest(message):
     else:
         def tiebreaker_sort_key(meme_id):
             meme_votes = votes.get(meme_id, {})
-            count = Counter(meme_votes.values())
+            all_emojis = []
+            for emoji_list in meme_votes.values():
+                all_emojis.extend(emoji_list)
+            count = Counter(all_emojis)
+           
             return (
                 count.get('💀', 0),  # prioritize 💀 votes first
                 count.get('😂', 0),  # then 😂 votes
