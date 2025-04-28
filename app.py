@@ -116,14 +116,18 @@ def handle_vote(call):
     user_vote_count.setdefault(user_id, 0)
     user_votes.setdefault(user_id, set())
 
-  # temporarily allow multiple votes on same meme for testing
-    
+    # Check if user already voted for this meme
+    if user_id in votes[meme_id]:
+        return bot.answer_callback_query(call.id, "⚠️ You've already voted for this meme!")
 
+    # Check if user has used all 5 votes
+    if user_vote_count[user_id] >= 5:
+        return bot.answer_callback_query(call.id, "❌ You've already used all 5 of your votes!")
+
+    # Record the vote
+    votes[meme_id][user_id] = emoji
     user_vote_count[user_id] += 1
     user_votes[user_id].add(meme_id)
-
-    votes[meme_id].setdefault(user_id, [])
-    votes[meme_id][user_id].append(emoji)
 
     bot.answer_callback_query(call.id, f"✅ You voted {emoji}!")
 
