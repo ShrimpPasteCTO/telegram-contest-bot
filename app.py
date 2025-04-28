@@ -3,6 +3,9 @@ import telebot
 import os
 import requests
 import time
+import random
+from collections import Counter
+
 
 # === 1. Configuration ===
 BOT_TOKEN = os.environ.get("BOT_TOKEN")  # We will set this environment variable on Render
@@ -247,15 +250,37 @@ def end_contest(message):
 
     ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
 
-    winner_id, winner_score = ranked[0]
-    winner_caption = next(m['caption'] for m in memes if m['id'] == winner_id)
-
     result_text = "🎉 *Contest Ended! Final Results:*\n\n"
     for rank, (meme_id, score) in enumerate(ranked, 1):
         caption = next(m['caption'] for m in memes if m['id'] == meme_id)
         result_text += f"{rank}. {caption} — *{score}* pts\n"
 
-    result_text += f"\n🏅 *Winner:* {winner_caption} — *{winner_score}* pts! 🏆"
+    # --- Smart Tiebreaker Winner Picking (💀 > 😂 > 🔥) ---
+
+    top_score = ranked[0][1]
+    top_memes = [meme_id for meme_id, score in ranked if score == top_score]
+
+    if len(top_memes) == 1:
+        winner_caption = next(m['caption'] for m in memes if m['id'] == top_memes[0])
+        result_text += f"\n🏅 *Winner:* {winner_caption} — *{top_score}* pts! 🏆"
+    else:
+        def tiebreaker_sort_key(meme_id):
+            meme_votes = votes.get(meme_id, {})
+            count = Counter(meme_votes.values())
+            return (
+                count.get('💀', 0),  # prioritize 💀 votes first
+                count.get('😂', 0),  # then 😂 votes
+                count.get('🔥', 0)   # then 🔥 votes
+            )
+
+        # Sort tied memes by heavier votes first
+        top_memes_sorted = sorted(top_memes, key=tiebreaker_sort_key, reverse=True)
+
+        winner_id = top_memes_sorted[0]
+        winner_caption = next(m['caption'] for m in memes if m['id'] == winner_id)
+
+        result_text += f"\n🏅 *Winner (Tiebreaker: Heaviest Votes!)* {winner_caption} — *{top_score}* pts! 🏆"
+
 
     bot.reply_to(message, result_text, parse_mode="Markdown")
 
