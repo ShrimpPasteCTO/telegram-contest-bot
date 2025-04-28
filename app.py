@@ -126,23 +126,24 @@ def handle_vote(call):
     votes[meme_id][user_id] = emoji
     bot.answer_callback_query(call.id, f"✅ You voted {emoji}!")
 
-    def offer_unvote_options(call, user_id, new_meme_id, new_emoji):
-    keyboard = telebot.types.InlineKeyboardMarkup()
+def offer_unvote_options(call, user_id, new_meme_id, new_emoji):
+keyboard = telebot.types.InlineKeyboardMarkup()
 
-    for old_meme_id in user_votes[user_id]:
-        caption = next(m['caption'] for m in memes if m['id'] == old_meme_id)
-        button = telebot.types.InlineKeyboardButton(
-            f"Unvote {caption}",
-            callback_data=f"unvote_{old_meme_id}_{new_meme_id}_{new_emoji}"
-        )
-        keyboard.add(button)
-
-    bot.send_message(
-        call.message.chat.id,
-        "🚨 You've already used all 5 votes! Choose a meme to unvote first:",
-        reply_markup=keyboard,
-        message_thread_id=THREAD_ID
+for old_meme_id in user_votes[user_id]:
+    caption = next(m['caption'] for m in memes if m['id'] == old_meme_id)
+    button = telebot.types.InlineKeyboardButton(
+        f"Unvote {caption}",
+        callback_data=f"unvote_{old_meme_id}_{new_meme_id}_{new_emoji}"
     )
+    keyboard.add(button)
+
+bot.send_message(
+    call.message.chat.id,
+    "🚨 You've already used all 5 votes! Choose a meme to unvote first:",
+    reply_markup=keyboard,
+    message_thread_id=THREAD_ID
+)
+
 @bot.callback_query_handler(func=lambda call: call.data.startswith("unvote_"))
 def handle_unvote(call):
     if not contest_active:
