@@ -284,7 +284,37 @@ def end_contest(message):
         scores[meme_id] = total
 
 
-    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    # First, group memes by score
+    score_groups = {}
+    for meme_id, score in scores.items():
+        score_groups.setdefault(score, []).append(meme_id)
+
+    # Then, sort scores descending
+    sorted_scores = sorted(score_groups.keys(), reverse=True)
+
+    # Now build a fully sorted list with tiebreakers
+    ranked = []
+    for score in sorted_scores:
+        tied_memes = score_groups[score]
+
+        if len(tied_memes) == 1:
+            ranked.append((tied_memes[0], score))
+        else:
+            def tiebreaker_key(meme_id):
+                meme_votes = votes.get(meme_id, {})
+                all_emojis = []
+                for emoji_list in meme_votes.values():
+                    all_emojis.extend(emoji_list)
+                count = Counter(all_emojis)
+                return (
+                    count.get('💀', 0),
+                    count.get('😂', 0),
+                    count.get('🔥', 0)
+                )
+            tied_sorted = sorted(tied_memes, key=tiebreaker_key, reverse=True)
+            for meme_id in tied_sorted:
+                ranked.append((meme_id, score))
+
 
     result_text = "🎉 *Contest Ended! Final Results:*\n\n"
 
