@@ -130,9 +130,7 @@ def handle_vote(call):
                 meme['voters'].add(user_id)
                 meme['votes'] += 1
                 # Update the button text to reflect the new vote count
-                new_button = telebot.types.InlineKeyboardButton(f"👍 Vote {meme['votes']}", callback_data=call.data)
-                bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                              reply_markup=telebot.types.InlineKeyboardMarkup().add(new_button))
+                
                 bot.answer_callback_query(call.id, "✅ Vote recorded!")
             break
 
