@@ -66,9 +66,8 @@ def start_contest(message):
 
     contest_active = True
     # Post each meme in the contest topic with a vote button
-    for meme in memes:
-        # Create an inline keyboard with a single "Vote" button starting at 0 votes
-         # ─── build 3 buttons with weights ───
+   for meme in memes:
+    try:
         kb = telebot.types.InlineKeyboardMarkup(row_width=3)
         buttons = [
             telebot.types.InlineKeyboardButton(f"🔥 1pt", callback_data=f"🔥_{meme['id']}"),
@@ -77,7 +76,7 @@ def start_contest(message):
         ]
         kb.add(*buttons)
 
-        # send and record the message_id
+        # Send the meme
         msg = bot.send_photo(
             chat_id=GROUP_ID,
             photo=meme['url'],
@@ -85,7 +84,14 @@ def start_contest(message):
             reply_markup=kb,
             message_thread_id=THREAD_ID
         )
+
+        # Record the sent message ID
         posted_memes[meme['id']] = msg.message_id
+
+        time.sleep(0.2)  # small pause between sending
+
+    except Exception as e:
+        print(f"Error posting meme {meme['id']}: {e}")
 
     # Acknowledge the contest started
     bot.reply_to(message, "🎉 Contest started! Vote for your favorite meme above by clicking the buttons.")
